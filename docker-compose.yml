@@ -11,6 +11,7 @@ services:
       MYSQL_PASSWORD: dhM3YMtk%ADD]Za-
     ports:
       - "3307:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
       - ./kampuspu_apirt06.sql:/docker-entrypoint-initdb.d/init.sql
@@ -38,7 +39,9 @@ services:
       - app_network
 
   python:
-    image: ghcr.io/danprat/fandi-flask-app/python:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.python
     container_name: python_scripts
     volumes:
       - ./uploads:/app/uploads
