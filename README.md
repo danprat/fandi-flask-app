@@ -10,17 +10,33 @@ This application consists of:
 - Docker
 - Docker Compose
 
-## Setup
-1. Clone or copy the project files
-2. Run `docker-compose up --build` to build and start all services
-3. Access the PHP API at http://localhost:8080
-4. Access the Flask app at http://localhost:5000
+## Quick Start (Using Pre-built Images)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/danprat/fandi-flask-app.git
+   cd fandi-flask-app
+   ```
+
+2. Run the application:
+   ```bash
+   docker-compose up
+   ```
+
+3. Access the applications:
+   - PHP API: http://localhost:8080
+   - Flask App: http://localhost:5000
+
+## Build from Source (Alternative)
+If you prefer to build images locally:
+```bash
+docker-compose -f docker-compose.yml up --build
+```
 
 ## Services
 - **mysql**: MySQL 8.0 database
-- **php**: Apache with PHP 8.1
-- **flask**: Python Flask app
-- **python**: Python scripts container
+- **php**: Apache with PHP 8.1 (image: `ghcr.io/danprat/fandi-flask-app/php:latest`)
+- **flask**: Python Flask app (image: `ghcr.io/danprat/fandi-flask-app/flask:latest`)
+- **python**: Python scripts container (image: `ghcr.io/danprat/fandi-flask-app/python:latest`)
 
 ## Database
 The database is initialized with the SQL file `kampuspu_apirt06.sql`.
@@ -35,3 +51,6 @@ Default credentials:
 
 ## Stopping
 Run `docker-compose down` to stop all services.
+
+## GitHub Actions
+Images are automatically built and pushed to GitHub Container Registry on every push to main branch.
