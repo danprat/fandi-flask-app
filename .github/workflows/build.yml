@@ -1,0 +1,91 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  PHP_IMAGE: ghcr.io/danprat/fandi-flask-app/php
+  FLASK_IMAGE: ghcr.io/danprat/fandi-flask-app/flask
+  PYTHON_IMAGE: ghcr.io/danprat/fandi-flask-app/python
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for PHP
+      id: meta-php
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.PHP_IMAGE }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push PHP image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.php
+        push: true
+        tags: ${{ steps.meta-php.outputs.tags }}
+        labels: ${{ steps.meta-php.outputs.labels }}
+
+    - name: Extract metadata for Flask
+      id: meta-flask
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.FLASK_IMAGE }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Flask image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.flask
+        push: true
+        tags: ${{ steps.meta-flask.outputs.tags }}
+        labels: ${{ steps.meta-flask.outputs.labels }}
+
+    - name: Extract metadata for Python
+      id: meta-python
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.PYTHON_IMAGE }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Python image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.python
+        push: true
+        tags: ${{ steps.meta-python.outputs.tags }}
+        labels: ${{ steps.meta-python.outputs.labels }}
