@@ -26,5 +26,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy scripts
 COPY python_scripts/ /app/
 
-# Default command (can be overridden)
-CMD ["python", "tes.py"]
+# Create a simple entrypoint that runs tes.py if present, otherwise keeps the container alive
+RUN printf "#!/bin/sh\nif [ -f /app/tes.py ]; then exec python /app/tes.py; else echo 'tes.py not found, starting shell'; exec tail -f /dev/null; fi\n" > /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD [""]
