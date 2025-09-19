@@ -1,9 +1,18 @@
 import sys
-import face_recognition
 import json
+
+try:
+    import face_recognition
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError:
+    FACE_RECOGNITION_AVAILABLE = False
 
 # Ambil path gambar dari argumen command line
 image_path = sys.argv[1]
+
+if not FACE_RECOGNITION_AVAILABLE:
+    print(json.dumps({"status": "error", "message": "Face recognition library not available on this system"}))
+    sys.exit(1)
 
 try:
     # Muat gambar

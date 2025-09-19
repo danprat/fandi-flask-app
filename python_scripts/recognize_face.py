@@ -1,7 +1,13 @@
 import sys
-import face_recognition
 import numpy as np
 import json
+
+try:
+    import face_recognition
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError:
+    FACE_RECOGNITION_AVAILABLE = False
+    print("Warning: face_recognition library not available")
 
 # Ambil path gambar baru dan path file data wajah
 unknown_image_path = sys.argv[1]

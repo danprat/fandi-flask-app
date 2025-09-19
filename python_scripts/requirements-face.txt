@@ -1,0 +1,13 @@
+# Advanced requirements with face recognition (use only if needed)
+# Warning: These packages may take long time to build on ARM
+numpy>=1.21.0,<1.25.0
+opencv-python-headless>=4.5.0,<4.9.0
+Pillow>=9.0.0,<11.0.0
+requests>=2.25.0
+mysql-connector-python>=8.0.0
+scikit-image>=0.18.0
+scipy>=1.7.0
+
+# Face recognition packages (comment out if build fails)
+# dlib>=19.22.0
+# face-recognition>=1.3.0

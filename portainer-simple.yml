@@ -49,7 +49,7 @@ services:
   python-scripts:
     build:
       context: https://github.com/danprat/fandi-flask-app.git
-      dockerfile: Dockerfile.python
+      dockerfile: Dockerfile.python-lite
     volumes:
       - uploads:/app/uploads
     networks:
