@@ -3,8 +3,6 @@ version: '3.8'
 services:
   mysql:
     image: mysql:8.0
-    platform: linux/arm64
-    container_name: mysql_db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: kampuspu_rt
@@ -15,54 +13,55 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./kampuspu_apirt06.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - app_network
+      - fandi_net
+    restart: unless-stopped
 
-  php:
+  php-app:
     build:
-      context: .
+      context: https://github.com/danprat/fandi-flask-app.git
       dockerfile: Dockerfile.php
-      platforms:
-        - linux/arm64
-    container_name: php_app
+      no_cache: true
     ports:
       - "8081:80"
     depends_on:
       - mysql
     volumes:
-      - ./uploads:/var/www/html/uploads
+      - uploads:/var/www/html/uploads
     networks:
-      - app_network
+      - fandi_net
+    restart: unless-stopped
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
 
-  flask:
+  flask-app:
     build:
-      context: .
+      context: https://github.com/danprat/fandi-flask-app.git
       dockerfile: Dockerfile.flask
-      platforms:
-        - linux/arm64
-    container_name: flask_app
     ports:
       - "5001:5000"
-    networks:
-      - app_network
-
-  python:
-    build:
-      context: .
-      dockerfile: Dockerfile.python
-      platforms:
-        - linux/arm64
-    container_name: python_scripts
     volumes:
-      - ./uploads:/app/uploads
-      - ./python_scripts:/app
+      - uploads:/app/uploads
     networks:
-      - app_network
+      - fandi_net
+    restart: unless-stopped
+
+  python-scripts:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.python
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - fandi_net
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - flask-app
 
 volumes:
   mysql_data:
+  uploads:
 
 networks:
-  app_network:
-    driver: bridge
+  fandi_net:

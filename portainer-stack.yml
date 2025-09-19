@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fandi_mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: kampuspu_rt
+      MYSQL_USER: kampuspu_rt
+      MYSQL_PASSWORD: dhM3YMtk%ADD]Za-
+    ports:
+      - "3307:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./kampuspu_apirt06.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - fandi_network
+    restart: unless-stopped
+
+  php:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.php
+    container_name: fandi_php_app
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    volumes:
+      - uploads_data:/var/www/html/uploads
+    networks:
+      - fandi_network
+    restart: unless-stopped
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=kampuspu_rt
+      - MYSQL_USER=kampuspu_rt
+      - MYSQL_PASSWORD=dhM3YMtk%ADD]Za-
+
+  flask:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.flask
+    container_name: fandi_flask_app
+    ports:
+      - "5001:5000"
+    networks:
+      - fandi_network
+    restart: unless-stopped
+    volumes:
+      - uploads_data:/app/uploads
+    environment:
+      - FLASK_ENV=production
+
+  python:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.python
+    container_name: fandi_python_scripts
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - fandi_network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - flask
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=kampuspu_rt
+      - FLASK_URL=http://flask:5000
+
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  fandi_network:
+    driver: bridge

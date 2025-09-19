@@ -1,0 +1,17 @@
+# Uploads folder security
+# Prevent execution of PHP files in uploads directory
+
+Options -Indexes
+Options -ExecCGI
+
+# Deny access to PHP files
+<FilesMatch "\.(php|phtml|php3|php4|php5|pl|py|jsp|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Allow common image and document formats
+<FilesMatch "\.(jpg|jpeg|png|gif|pdf|doc|docx|txt)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

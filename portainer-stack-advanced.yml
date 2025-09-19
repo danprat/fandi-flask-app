@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fandi_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: kampuspu_rt
+      MYSQL_USER: kampuspu_rt
+      MYSQL_PASSWORD: dhM3YMtk%ADD]Za-
+    ports:
+      - "3307:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  init-db:
+    image: mysql:8.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: kampuspu_rt
+    networks:
+      - app_network
+    volumes:
+      - ./init-db.sh:/init-db.sh:ro
+    command: /bin/bash /init-db.sh
+    restart: "no"
+
+  php:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.php
+    container_name: fandi_php
+    ports:
+      - "${PHP_PORT:-8081}:80"
+    depends_on:
+      - init-db
+    volumes:
+      - uploads_data:/var/www/html/uploads
+    networks:
+      - app_network
+    restart: unless-stopped
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=kampuspu_rt
+      - DB_USER=kampuspu_rt
+      - DB_PASS=dhM3YMtk%ADD]Za-
+
+  flask:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.flask
+    container_name: fandi_flask
+    ports:
+      - "${FLASK_PORT:-5001}:5000"
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - app_network
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  python:
+    build:
+      context: https://github.com/danprat/fandi-flask-app.git
+      dockerfile: Dockerfile.python
+    container_name: fandi_python
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - app_network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - flask
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=kampuspu_rt
+      - MYSQL_USER=kampuspu_rt
+      - MYSQL_PASSWORD=dhM3YMtk%ADD]Za-
+      - FLASK_URL=http://flask:5000
+
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge

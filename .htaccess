@@ -1,14 +1,33 @@
-# flask instant deploy
-# deployed by DomaiNesia
-Options +FollowSymLinks -Indexes
-IndexIgnore *
-DirectoryIndex
-
-RewriteEngine On
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# PHP Application .htaccess
+Options -Indexes
+DirectoryIndex index.php login.php
 
 <IfModule mod_rewrite.c>
-    RewriteEngine on
-    RewriteRule ^(.*)$ http://127.0.0.1:52356/$1 [P]
+    RewriteEngine On
+    
+    # Security: Deny access to sensitive files
+    RewriteRule ^uploads/.*\.php$ - [F,L]
+    
+    # Optional: Remove .php extension from URLs
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteRule ^([^\.]+)$ $1.php [NC,L]
 </IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# File Upload Security
+<FilesMatch "\.(php|phtml|php3|php4|php5|pl|py|jsp|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
