@@ -10,7 +10,7 @@ services:
       MYSQL_USER: kampuspu_rt
       MYSQL_PASSWORD: dhM3YMtk%ADD]Za-
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./kampuspu_apirt06.sql:/docker-entrypoint-initdb.d/init.sql
@@ -21,7 +21,7 @@ services:
     image: ghcr.io/danprat/fandi-flask-app/php:latest
     container_name: php_app
     ports:
-      - "8080:80"
+      - "8081:80"
     depends_on:
       - mysql
     volumes:
@@ -33,7 +33,7 @@ services:
     image: ghcr.io/danprat/fandi-flask-app/flask:latest
     container_name: flask_app
     ports:
-      - "5000:5000"
+      - "5001:5000"
     networks:
       - app_network
 
